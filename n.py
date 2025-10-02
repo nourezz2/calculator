@@ -1,4 +1,3 @@
-
 import tkinter
 
 button_value = [
@@ -72,74 +71,16 @@ def button_clicked(value) :
             if A is not None and operator is not None :
                 B = label["text"]
                 numA = float(A)
-                numB = float(B) 
+                try:
+                    numB = float(B)
+                except ValueError:
+                    label["text"] = "Error"
+                    clear_all()
+                    return
+
                 if operator == "+":
                     label["text"] = remove0(numA + numB)
                 elif operator == "-":
                     label["text"] = remove0(numA - numB)
                 elif operator == "×":
-                    label["text"] = remove0(numA * numB)
-                elif operator =="÷":
-                    label["text"] = remove0(numA / numB)
-                
-                clear_all()
-        
-            
-        elif value in "+-×÷":
-            if operator is None :
-                A = label["text"] 
-                label["text"] = "0"
-                B = "0"
-            operator = value
-    
-    elif value in upper_symbols:
-        if value == "AC":
-            clear_all()
-            label["text"] = "0"
-            
-        elif value == "+/-":
-            result = float(label["text"]) * -1
-            label["text"] = remove0(result)
-            
-        elif value == "%": 
-            result = float(label["text"]) / 100
-            label["text"] = remove0(result)
-            label["text"] = f"{result}%"
-        
-        elif value == "√":
-            try:
-                num = float(label["text"])
-                if num < 0:
-                    label["text"] = "Error"
-                else:
-                    label["text"] = f"{num ** 0.5:.3f}"
-            except ValueError:
-                label["text"] = "Error"
-    
-            
-        
-    else:
-        if value == ".":
-            if value not in label["text"]:
-                label["text"] += value
-                
-        elif value in "0123456789":
-            if label["text"] == "0":
-                label["text"] = value
-                
-            else :
-                label["text"] += value 
-frame.pack()
-
-window.update()
-window_width = window.winfo_width()
-window_height = window.winfo_height()
-screen_width = window.winfo_screenwidth()
-screen_height = window.winfo_screenheight()
-
-window_x = int((screen_width / 2) - (window_width / 2))
-window_y = int((screen_height /2)  - (window_height / 2))
-
-window.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}")
-
-window.mainloop()
+                    label["text"] = remove0(numA
