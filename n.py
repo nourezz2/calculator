@@ -1,86 +1,70 @@
-import tkinter
+"""Tkinter calculator with sequential arithmetic and recoverable errors."""
+import math
+import tkinter as tk
 
-button_value = [
-    ["AC", "+/-", "%", "÷"],
-    ["7", "8", "9", "×"],
-    ["4", "5", "6", "-"],
-    ["1", "2", "3", "+"],
-    ["0", ".", "√", "="]   
-]
+class Calculator:
+    def __init__(self):
+        self.clear()
 
-row_count = len(button_value)
-column_count = len(button_value[0])
+    def clear(self):
+        self.text, self.left, self.operator, self.fresh = '0', None, None, True
 
-upper_symbols = ["AC", "+/-", "%", "√"]
-right_symbols = ["÷", "×", "-", "+", "="]
+    def show(self, value):
+        if not math.isfinite(value):
+            raise ValueError('Non-finite result')
+        self.text = format(value, '.12g')
 
-light_gray_color = "#D4D4D2"
-black_color = "#1C1C1C"
-dark_gray_color = "#505050"
-orange_color = "#FF9500"
-white = "white"
+    def calculate(self):
+        a, b = self.left, float(self.text)
+        if self.operator == '+': self.show(a + b)
+        elif self.operator == '-': self.show(a - b)
+        elif self.operator == '×': self.show(a * b)
+        elif self.operator == '÷': self.show(a / b)
+        self.operator = None
 
-window = tkinter.Tk()
-window.title("calculator")
-window.resizable(False,False)
+    def press(self, key):
+        try:
+            if key == 'AC': self.clear()
+            elif key.isdigit() or key == '.':
+                if self.fresh or self.text == 'Error':
+                    self.text, self.fresh = '0', False
+                if key == '.':
+                    if '.' not in self.text: self.text += '.'
+                else: self.text = key if self.text == '0' else self.text + key
+            elif self.text != 'Error':
+                if key in ('+', '-', '×', '÷'):
+                    if self.operator and not self.fresh: self.calculate()
+                    self.left, self.operator, self.fresh = float(self.text), key, True
+                elif key == '=':
+                    if self.operator and not self.fresh: self.calculate()
+                    self.fresh = True
+                elif key == '+/-': self.show(-float(self.text))
+                elif key == '%': self.show(float(self.text) / 100)
+                elif key == '√':
+                    self.show(math.sqrt(float(self.text)))
+                    self.fresh = True
+        except (ValueError, ZeroDivisionError, OverflowError):
+            self.clear()
+            self.text = 'Error'
+        return self.text
 
-frame = tkinter.Frame(window)
+def main():
+    calculator = Calculator()
+    window = tk.Tk()
+    window.title('Calculator')
+    window.resizable(False, False)
+    display = tk.StringVar(value='0')
+    tk.Label(window, textvariable=display, font=('Arial',36), bg='#1C1C1C',
+             fg='white', anchor='e', width=14).grid(row=0,column=0,columnspan=4,sticky='ew')
+    rows = [['AC','+/-','%','÷'],['7','8','9','×'],['4','5','6','-'],['1','2','3','+'],['0','.','√','=']]
+    for row, keys in enumerate(rows,start=1):
+        for column,key in enumerate(keys):
+            utility = key in ('AC','+/-','%','√')
+            color = '#FF9500' if key in ('+','-','×','÷','=') else '#D4D4D2' if utility else '#505050'
+            tk.Button(window,text=key,font=('Arial',24),width=4,height=2,bg=color,
+                      fg='black' if utility else 'white',
+                      command=lambda value=key:display.set(calculator.press(value))).grid(row=row,column=column)
+    window.mainloop()
 
-label = tkinter.Label(frame, text= "0", font= ("Arial", 45), background= black_color, foreground= white,
-                    anchor= "e", width= column_count)
-
-label.grid(row=0, column=0, columnspan=column_count,  sticky= "we")
-
-for row in range(row_count):
-    for column in range(column_count):
-        value = button_value[row][column]
-        button = tkinter.Button(frame, text= value, font= ("Arial", 30),width= column_count-1, height= 1,
-                                command= lambda value =  value: button_clicked(value))
-        
-        if value in upper_symbols:
-            button.config(foreground= black_color, background= light_gray_color)
-        
-        elif value in right_symbols:
-            button.config(foreground= white, background= orange_color)
-        
-        else :
-            button.config(foreground= white , background= dark_gray_color)
-            
-        button.grid(row = row + 1, column= column)
-
-A = "0"
-operator = None
-B = None
-
-def clear_all():
-    global A, operator, B 
-    A = "0"
-    operator = None
-    B = None
-
-def remove0(num):
-    if num % 1 == 0:
-        num = int(num)
-    return str(num)
-
-def button_clicked(value) :
-    global right_symbols, upper_symbols, label, A, B, operator
-    
-    if value in right_symbols:
-        if value == "=":
-            if A is not None and operator is not None :
-                B = label["text"]
-                numA = float(A)
-                try:
-                    numB = float(B)
-                except ValueError:
-                    label["text"] = "Error"
-                    clear_all()
-                    return
-
-                if operator == "+":
-                    label["text"] = remove0(numA + numB)
-                elif operator == "-":
-                    label["text"] = remove0(numA - numB)
-                elif operator == "×":
-                    label["text"] = remove0(numA
+if __name__ == '__main__':
+    main()
